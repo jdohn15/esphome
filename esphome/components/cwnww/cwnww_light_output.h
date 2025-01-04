@@ -20,13 +20,13 @@ class CWNWWLightOutput : public light::LightOutput {
       auto traits = light::LightTraits();
       traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
   
-      // Correctly map mireds to Kelvin values
-      traits.set_min_mireds(1e6f / this->cold_white_temperature_); // Cold white (3500 K) -> ~286 mireds
-      traits.set_max_mireds(1e6f / this->warm_white_temperature_); // Warm white (1000 K) -> 1000 mireds
+      // Use Kelvin directly for min/max values
+      traits.set_min_mireds(this->warm_white_temperature_);
+      traits.set_max_mireds(this->cold_white_temperature_);
   
-      // Log for debugging
-      ESP_LOGI("cwnww", "Min mireds (cold white): %f", 1e6f / this->cold_white_temperature_);
-      ESP_LOGI("cwnww", "Max mireds (warm white): %f", 1e6f / this->warm_white_temperature_);
+      // Debug logs for verification
+      ESP_LOGI("cwnww", "Min Kelvin (warm white): %f", this->warm_white_temperature_);
+      ESP_LOGI("cwnww", "Max Kelvin (cold white): %f", this->cold_white_temperature_);
   
       return traits;
   }
@@ -34,8 +34,8 @@ class CWNWWLightOutput : public light::LightOutput {
 
 
 
+
   void write_state(light::LightState *state) override {
-      // Check if the light is off
       if (!state->current_values.is_on()) {
           // Turn off all channels
           this->cold_white_->set_level(0.0f);
@@ -44,27 +44,31 @@ class CWNWWLightOutput : public light::LightOutput {
           return;
       }
   
-      // If the light is on, compute brightness levels
       float cwhite = 0.0f, nwhite = 0.0f, wwhite = 0.0f;
-      float kelvin = 1e6f / state->current_values.get_color_temperature();
+      float kelvin = state->current_values.get_color_temperature();
+      float brightness = state->current_values.get_brightness();
   
       if (kelvin >= this->cold_white_temperature_) {
-          cwhite = state->current_values.get_brightness();
+          // Full cold white
+          cwhite = brightness;
       } else if (kelvin <= this->warm_white_temperature_) {
-          wwhite = state->current_values.get_brightness();
+          // Full warm white
+          wwhite = brightness;
       } else if (kelvin < this->cold_white_temperature_ && kelvin > this->neutral_white_temperature_) {
-          float blend = (this->cold_white_temperature_ - kelvin) /
+          // Blend between cold white and neutral white
+          float blend = (this->cold_white_temperature_ - kelvin) / 
                         (this->cold_white_temperature_ - this->neutral_white_temperature_);
-          cwhite = state->current_values.get_brightness() * blend;
-          nwhite = state->current_values.get_brightness() * (1.0f - blend);
+          cwhite = brightness * blend;
+          nwhite = brightness * (1.0f - blend);
       } else if (kelvin <= this->neutral_white_temperature_ && kelvin > this->warm_white_temperature_) {
-          float blend = (this->neutral_white_temperature_ - kelvin) /
+          // Blend between neutral white and warm white
+          float blend = (this->neutral_white_temperature_ - kelvin) / 
                         (this->neutral_white_temperature_ - this->warm_white_temperature_);
-          nwhite = state->current_values.get_brightness() * blend;
-          wwhite = state->current_values.get_brightness() * (1.0f - blend);
+          nwhite = brightness * blend;
+          wwhite = brightness * (1.0f - blend);
       }
   
-      // Apply constant brightness if configured
+      // Apply constant brightness normalization if configured
       if (this->constant_brightness_) {
           float total = cwhite + nwhite + wwhite;
           if (total > 1.0f) {
@@ -74,11 +78,16 @@ class CWNWWLightOutput : public light::LightOutput {
           }
       }
   
-      // Set the levels to the outputs
+      // Set the levels for each output
       this->cold_white_->set_level(cwhite);
       this->neutral_white_->set_level(nwhite);
       this->warm_white_->set_level(wwhite);
+  
+      // Debug logs for verification
+      ESP_LOGI("cwnww", "Kelvin: %f, Brightness: %f", kelvin, brightness);
+      ESP_LOGI("cwnww", "Cold White: %f, Neutral White: %f, Warm White: %f", cwhite, nwhite, wwhite);
   }
+
 
 
 
