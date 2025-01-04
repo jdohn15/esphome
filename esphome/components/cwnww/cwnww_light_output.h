@@ -25,17 +25,21 @@ class CWNWWLightOutput : public light::LightOutput {
   }
 
   void write_state(light::LightState *state) override {
-    // Directly map to cold, neutral, and warm white levels
-    float cwhite, nwhite, wwhite;
-    state->current_values_as_cwww(&cwhite, &nwhite, &wwhite, this->constant_brightness_);
-
-    // Assign values to outputs
-    this->cold_white_->set_level(cwhite);
-    this->neutral_white_->set_level(nwhite);
-    this->warm_white_->set_level(wwhite);
-
-    // Debug logs for final output
-    ESP_LOGI("cwnww", "Final Levels -> Cold White: %f, Neutral White: %f, Warm White: %f", cwhite, nwhite, wwhite);
+      if (!state->current_values.is_on()) {
+          this->cold_white_->set_level(0.0f);
+          this->neutral_white_->set_level(0.0f);  // Optional: If neutral is supported in your design
+          this->warm_white_->set_level(0.0f);
+          return;
+      }
+  
+      float cwhite, wwhite;
+      state->current_values_as_cwww(&cwhite, &wwhite, this->constant_brightness_);
+  
+      // Assign values to outputs
+      this->cold_white_->set_level(cwhite);
+      this->warm_white_->set_level(wwhite);
+  
+      ESP_LOGI("cwnww", "Final Levels -> Cold White: %f, Warm White: %f", cwhite, wwhite);
   }
 
  protected:
