@@ -12,6 +12,9 @@ from esphome.const import (
     CONF_WARM_WHITE_COLOR_TEMPERATURE,
 )
 
+CONF_NEUTRAL_WHITE = "neutral_white"
+CONF_NEUTRAL_WHITE_COLOR_TEMPERATURE = "neutral_white_color_temperature"
+
 cwnww_ns = cg.esphome_ns.namespace("cwnww")
 CWNWWLightOutput = cwnww_ns.class_("CWNWWLightOutput", light.LightOutput)
 
