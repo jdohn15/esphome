@@ -20,16 +20,17 @@ class CWNWWLightOutput : public light::LightOutput {
       auto traits = light::LightTraits();
       traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
   
-      // Correctly map warm white to min mireds and cold white to max mireds
+      // Convert Kelvin to mireds for min/max values
       traits.set_min_mireds(1e6f / this->warm_white_temperature_);
       traits.set_max_mireds(1e6f / this->cold_white_temperature_);
-
-      // Add logging to debug mireds calculations
+  
+      // Add logging to confirm calculations
       ESP_LOGI("cwnww", "Min mireds (warm white): %f", 1e6f / this->warm_white_temperature_);
       ESP_LOGI("cwnww", "Max mireds (cold white): %f", 1e6f / this->cold_white_temperature_);
-    
+  
       return traits;
   }
+
 
 
 
