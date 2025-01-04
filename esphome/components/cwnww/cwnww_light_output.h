@@ -20,8 +20,8 @@ class CWNWWLightOutput : public light::LightOutput {
   light::LightTraits get_traits() override {
     auto traits = light::LightTraits();
     traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
-    traits.set_min_mireds(1e6f / this->cold_white_temperature_);  // Cold white (3500 K)
-    traits.set_max_mireds(1e6f / this->warm_white_temperature_);  // Warm white (1000 K)
+    traits.set_min_color_temperature(this->warm_white_temperature_);
+    traits.set_max_color_temperature(this->cold_white_temperature_);
     return traits;
   }
 
@@ -39,27 +39,30 @@ class CWNWWLightOutput : public light::LightOutput {
 
     float cwhite = 0.0f, nwhite = 0.0f, wwhite = 0.0f;
 
+    // Full cold white
     if (kelvin >= this->cold_white_temperature_) {
-      // Full cold white
       cwhite = brightness;
-    } else if (kelvin <= this->warm_white_temperature_) {
-      // Full warm white
+    }
+    // Full warm white
+    else if (kelvin <= this->warm_white_temperature_) {
       wwhite = brightness;
-    } else if (kelvin > this->neutral_white_temperature_) {
-      // Blend cold white and neutral white
-      float blend = (this->cold_white_temperature_ - kelvin) / 
+    }
+    // Blend cold white and neutral white
+    else if (kelvin > this->neutral_white_temperature_) {
+      float blend = (this->cold_white_temperature_ - kelvin) /
                     (this->cold_white_temperature_ - this->neutral_white_temperature_);
       cwhite = brightness * blend;
       nwhite = brightness * (1.0f - blend);
-    } else {
-      // Blend neutral white and warm white
-      float blend = (this->neutral_white_temperature_ - kelvin) / 
+    }
+    // Blend neutral white and warm white
+    else {
+      float blend = (this->neutral_white_temperature_ - kelvin) /
                     (this->neutral_white_temperature_ - this->warm_white_temperature_);
       nwhite = brightness * blend;
       wwhite = brightness * (1.0f - blend);
     }
 
-    // Apply constant brightness normalization if configured
+    // Apply constant brightness normalization
     if (this->constant_brightness_) {
       float total = cwhite + nwhite + wwhite;
       if (total > 1.0f) {
@@ -69,12 +72,12 @@ class CWNWWLightOutput : public light::LightOutput {
       }
     }
 
-    // Set the levels for each output
+    // Set levels
     this->cold_white_->set_level(cwhite);
     this->neutral_white_->set_level(nwhite);
     this->warm_white_->set_level(wwhite);
 
-    // Debug logs for verification
+    // Debug logs
     ESP_LOGI("cwnww", "Kelvin: %f, Brightness: %f", kelvin, brightness);
     ESP_LOGI("cwnww", "Cold White: %f, Neutral White: %f, Warm White: %f", cwhite, nwhite, wwhite);
   }
