@@ -20,13 +20,13 @@ class CWNWWLightOutput : public light::LightOutput {
       auto traits = light::LightTraits();
       traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
   
-      // Set mired range (inverse of Kelvin)
-      traits.set_min_mireds(1000000.0f / this->cold_white_temperature_); // Cold white -> ~286 mireds
-      traits.set_max_mireds(1000000.0f / this->warm_white_temperature_); // Warm white -> 1000 mireds
+      // Inform Home Assistant of the proper Kelvin range
+      traits.set_min_color_temperature(this->warm_white_temperature_); // Warm white (1000 K)
+      traits.set_max_color_temperature(this->cold_white_temperature_); // Cold white (3500 K)
   
       // Debug logs
-      ESP_LOGI("cwnww", "Min Mireds (cold white): %f", 1000000.0f / this->cold_white_temperature_);
-      ESP_LOGI("cwnww", "Max Mireds (warm white): %f", 1000000.0f / this->warm_white_temperature_);
+      ESP_LOGI("cwnww", "Min Kelvin (warm white): %f", this->warm_white_temperature_);
+      ESP_LOGI("cwnww", "Max Kelvin (cold white): %f", this->cold_white_temperature_);
   
       return traits;
   }
