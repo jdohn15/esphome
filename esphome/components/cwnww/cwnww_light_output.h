@@ -30,6 +30,8 @@ class CWNWWLightOutput : public light::LightOutput {
     float kelvin = state->current_values.get_color_temperature();
     float brightness = state->current_values.get_brightness();
 
+    float mireds = 1000000.0f / kelvin;
+    
     ESP_LOGI("cwnww", "Kelvin: %f, Brightness: %f", kelvin, brightness);
 
     // Define fixed temperature values
