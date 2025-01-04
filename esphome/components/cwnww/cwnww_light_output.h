@@ -26,37 +26,60 @@ class CWNWWLightOutput : public light::LightOutput {
   
       return traits;
   }
+
+
+
   void write_state(light::LightState *state) override {
-    float cwhite = 0.0f, nwhite = 0.0f, wwhite = 0.0f;
-    float kelvin = 1e6f / state->current_values.get_color_temperature();
-
-    if (kelvin >= this->cold_white_temperature_) {
-      cwhite = 1.0f;  // Full cool white
-    } else if (kelvin <= this->warm_white_temperature_) {
-      wwhite = 1.0f;  // Full warm white
-    } else if (kelvin < this->cold_white_temperature_ && kelvin > this->neutral_white_temperature_) {
-      float blend = (this->cold_white_temperature_ - kelvin) / (this->cold_white_temperature_ - this->neutral_white_temperature_);
-      cwhite = blend;
-      nwhite = 1.0f - blend;
-    } else if (kelvin <= this->neutral_white_temperature_ && kelvin > this->warm_white_temperature_) {
-      float blend = (this->neutral_white_temperature_ - kelvin) / (this->neutral_white_temperature_ - this->warm_white_temperature_);
-      nwhite = blend;
-      wwhite = 1.0f - blend;
-    }
-
-    if (this->constant_brightness_) {
-      float total = cwhite + nwhite + wwhite;
-      if (total > 1.0f) {
-        cwhite /= total;
-        nwhite /= total;
-        wwhite /= total;
+      // Check if the light is off
+      if (!state->current_values.is_on()) {
+          // Turn off all channels
+          this->cold_white_->set_level(0.0f);
+          this->neutral_white_->set_level(0.0f);
+          this->warm_white_->set_level(0.0f);
+          return;
       }
-    }
-
-    this->cold_white_->set_level(cwhite);
-    this->neutral_white_->set_level(nwhite);
-    this->warm_white_->set_level(wwhite);
+  
+      // If the light is on, compute brightness levels
+      float cwhite = 0.0f, nwhite = 0.0f, wwhite = 0.0f;
+      float kelvin = 1e6f / state->current_values.get_color_temperature();
+  
+      if (kelvin >= this->cold_white_temperature_) {
+          cwhite = state->current_values.get_brightness();
+      } else if (kelvin <= this->warm_white_temperature_) {
+          wwhite = state->current_values.get_brightness();
+      } else if (kelvin < this->cold_white_temperature_ && kelvin > this->neutral_white_temperature_) {
+          float blend = (this->cold_white_temperature_ - kelvin) /
+                        (this->cold_white_temperature_ - this->neutral_white_temperature_);
+          cwhite = state->current_values.get_brightness() * blend;
+          nwhite = state->current_values.get_brightness() * (1.0f - blend);
+      } else if (kelvin <= this->neutral_white_temperature_ && kelvin > this->warm_white_temperature_) {
+          float blend = (this->neutral_white_temperature_ - kelvin) /
+                        (this->neutral_white_temperature_ - this->warm_white_temperature_);
+          nwhite = state->current_values.get_brightness() * blend;
+          wwhite = state->current_values.get_brightness() * (1.0f - blend);
+      }
+  
+      // Apply constant brightness if configured
+      if (this->constant_brightness_) {
+          float total = cwhite + nwhite + wwhite;
+          if (total > 1.0f) {
+              cwhite /= total;
+              nwhite /= total;
+              wwhite /= total;
+          }
+      }
+  
+      // Set the levels to the outputs
+      this->cold_white_->set_level(cwhite);
+      this->neutral_white_->set_level(nwhite);
+      this->warm_white_->set_level(wwhite);
   }
+
+
+
+
+
+
 
  protected:
   output::FloatOutput *cold_white_;
