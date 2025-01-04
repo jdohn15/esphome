@@ -22,8 +22,8 @@ class CWNWWLightOutput : public light::LightOutput {
       traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
       
       // Set mireds (converted from Kelvin)
-      traits.set_min_mireds(1000000.0f / this->cold_white_temperature_);
-      traits.set_max_mireds(1000000.0f / this->warm_white_temperature_);
+      traits.set_min_mireds(this->cold_white_temperature_);
+      traits.set_max_mireds(this->warm_white_temperature_);
       
       return traits;
   }
