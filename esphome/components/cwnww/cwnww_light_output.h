@@ -32,15 +32,20 @@ class CWNWWLightOutput : public light::LightOutput {
 
     ESP_LOGI("cwnww", "Kelvin: %f, Brightness: %f", kelvin, brightness);
 
+    // Define fixed temperature values
+    const float cold_white_temperature = 3500.0f;
+    const float neutral_white_temperature = 1800.0f;
+    const float warm_white_temperature = 1000.0f;
+
     float cwhite = 0.0f, nwhite = 0.0f, wwhite = 0.0f;
 
-    if (kelvin >= cold_white_temperature_) {
+    if (kelvin >= cold_white_temperature) {
       cwhite = brightness;
-    } else if (kelvin <= warm_white_temperature_) {
+    } else if (kelvin <= warm_white_temperature) {
       wwhite = brightness;
     } else {
-      float blend = (cold_white_temperature_ - kelvin) /
-                    (cold_white_temperature_ - warm_white_temperature_);
+      float blend = (cold_white_temperature - kelvin) /
+                    (cold_white_temperature - warm_white_temperature);
       cwhite = brightness * blend;
       wwhite = brightness * (1.0f - blend);
       nwhite = brightness * (1.0f - cwhite - wwhite);
@@ -57,8 +62,6 @@ class CWNWWLightOutput : public light::LightOutput {
   output::FloatOutput *cold_white_;
   output::FloatOutput *neutral_white_;
   output::FloatOutput *warm_white_;
-  float cold_white_temperature_{3500.0f};
-  float warm_white_temperature_{1000.0f};
 };
 
 }  // namespace cwnww
