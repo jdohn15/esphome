@@ -20,11 +20,11 @@ class CWNWWLightOutput : public light::LightOutput {
       auto traits = light::LightTraits();
       traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
   
-      // Set min/max Kelvin values correctly
-      traits.set_min_mireds(this->warm_white_temperature_);
-      traits.set_max_mireds(this->cold_white_temperature_);
+      // Set the Kelvin range directly and correctly
+      traits.set_min_color_temperature(this->warm_white_temperature_); // Warm white (1000 K)
+      traits.set_max_color_temperature(this->cold_white_temperature_); // Cold white (3500 K)
   
-      // Debug logs
+      // Debug logs for verification
       ESP_LOGI("cwnww", "Min Kelvin (warm white): %f", this->warm_white_temperature_);
       ESP_LOGI("cwnww", "Max Kelvin (cold white): %f", this->cold_white_temperature_);
   
