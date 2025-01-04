@@ -20,11 +20,11 @@ class CWNWWLightOutput : public light::LightOutput {
       auto traits = light::LightTraits();
       traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
   
-      // Use Kelvin directly for min/max values
+      // Set min/max Kelvin values correctly
       traits.set_min_mireds(this->warm_white_temperature_);
       traits.set_max_mireds(this->cold_white_temperature_);
   
-      // Debug logs for verification
+      // Debug logs
       ESP_LOGI("cwnww", "Min Kelvin (warm white): %f", this->warm_white_temperature_);
       ESP_LOGI("cwnww", "Max Kelvin (cold white): %f", this->cold_white_temperature_);
   
@@ -39,7 +39,7 @@ class CWNWWLightOutput : public light::LightOutput {
       ESP_LOGI("cwnww", "is_on: %s", state->current_values.is_on() ? "true" : "false");
       ESP_LOGI("cwnww", "Kelvin: %f", state->current_values.get_color_temperature());
       ESP_LOGI("cwnww", "Brightness: %f", state->current_values.get_brightness());
-    
+      
       if (!state->current_values.is_on()) {
           // Turn off all channels
           this->cold_white_->set_level(0.0f);
@@ -51,6 +51,14 @@ class CWNWWLightOutput : public light::LightOutput {
       float cwhite = 0.0f, nwhite = 0.0f, wwhite = 0.0f;
       float kelvin = state->current_values.get_color_temperature();
       float brightness = state->current_values.get_brightness();
+  
+      // Clamp Kelvin value to the valid range
+      if (kelvin < this->warm_white_temperature_) {
+          kelvin = this->warm_white_temperature_;
+      } else if (kelvin > this->cold_white_temperature_) {
+          kelvin = this->cold_white_temperature_;
+      }
+      ESP_LOGI("cwnww", "Clamped Kelvin: %f", kelvin);
   
       if (kelvin >= this->cold_white_temperature_) {
           // Full cold white
