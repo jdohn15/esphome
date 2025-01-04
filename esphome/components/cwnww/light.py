@@ -7,8 +7,10 @@ from esphome.const import (
     CONF_WARM_WHITE,
     CONF_CONSTANT_BRIGHTNESS,
     CONF_OUTPUT_ID,
-    CONF_NEUTRAL_WHITE,
 )
+
+# Define the missing constant
+CONF_NEUTRAL_WHITE = "neutral_white"
 
 cwnww_ns = cg.esphome_ns.namespace("cwnww")
 CWNWWLightOutput = cwnww_ns.class_("CWNWWLightOutput", light.LightOutput)
