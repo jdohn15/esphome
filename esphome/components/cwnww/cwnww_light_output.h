@@ -42,17 +42,17 @@ class CWNWWLightOutput : public light::LightOutput {
       float kelvin = 1000000.0f / mireds;  // Convert mireds to Kelvin
       float brightness = state->current_values.get_brightness();
   
-      // Debug log for raw Kelvin
+      // Debug: Log raw Kelvin
       ESP_LOGI("cwnww", "Raw Kelvin (converted from mireds): %f", kelvin);
   
-      // Clamp Kelvin to the defined range
+      // Correct clamping logic
       if (kelvin > this->cold_white_temperature_) {
           kelvin = this->cold_white_temperature_;
       } else if (kelvin < this->warm_white_temperature_) {
           kelvin = this->warm_white_temperature_;
       }
   
-      // Debug log for clamped Kelvin
+      // Debug: Log clamped Kelvin
       ESP_LOGI("cwnww", "Clamped Kelvin: %f", kelvin);
   
       // Calculate output levels
@@ -66,14 +66,14 @@ class CWNWWLightOutput : public light::LightOutput {
           // Full warm white
           wwhite = brightness;
           ESP_LOGI("cwnww", "Full Warm White active.");
-      } else if (kelvin < this->cold_white_temperature_ && kelvin > this->neutral_white_temperature_) {
+      } else if (kelvin > this->neutral_white_temperature_) {
           // Blend between cold white and neutral white
           float blend = (this->cold_white_temperature_ - kelvin) /
                         (this->cold_white_temperature_ - this->neutral_white_temperature_);
           cwhite = brightness * blend;
           nwhite = brightness * (1.0f - blend);
           ESP_LOGI("cwnww", "Blending Cold White (%f) and Neutral White (%f).", cwhite, nwhite);
-      } else if (kelvin <= this->neutral_white_temperature_ && kelvin > this->warm_white_temperature_) {
+      } else {
           // Blend between neutral white and warm white
           float blend = (this->neutral_white_temperature_ - kelvin) /
                         (this->neutral_white_temperature_ - this->warm_white_temperature_);
@@ -92,7 +92,7 @@ class CWNWWLightOutput : public light::LightOutput {
           }
       }
   
-      // Debug log for calculated outputs
+      // Debug: Log final output levels
       ESP_LOGI("cwnww", "Final Levels -> Cold White: %f, Neutral White: %f, Warm White: %f", cwhite, nwhite, wwhite);
   
       // Apply the levels to the hardware outputs
