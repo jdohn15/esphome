@@ -44,7 +44,6 @@ class CWNWWLightOutput : public light::LightOutput {
 
  protected:
   output::FloatOutput *cold_white_;
-  output::FloatOutput *neutral_white_;
   output::FloatOutput *warm_white_;
   float cold_white_temperature_{3500.0f};
   float warm_white_temperature_{1000.0f};
