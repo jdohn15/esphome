@@ -1,17 +1,17 @@
+from esphome import automation
+from esphome.components import light, output
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import light, output
 from esphome.const import (
-    CONF_CONSTANT_BRIGHTNESS,
-    CONF_OUTPUT_ID,
     CONF_COLD_WHITE,
-    CONF_NEUTRAL_WHITE,
     CONF_WARM_WHITE,
+    CONF_CONSTANT_BRIGHTNESS,
     CONF_COLD_WHITE_COLOR_TEMPERATURE,
-    CONF_NEUTRAL_WHITE_COLOR_TEMPERATURE,
     CONF_WARM_WHITE_COLOR_TEMPERATURE,
+    CONF_OUTPUT_ID,
 )
 
+# Define the new constants for neutral white
 CONF_NEUTRAL_WHITE = "neutral_white"
 CONF_NEUTRAL_WHITE_COLOR_TEMPERATURE = "neutral_white_color_temperature"
 
