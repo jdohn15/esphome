@@ -45,7 +45,7 @@ class CWNWWLightOutput : public light::LightOutput {
       // Debug: Log raw Kelvin
       ESP_LOGI("cwnww", "Raw Kelvin (converted from mireds): %f", kelvin);
   
-      // Correct clamping logic
+      // Clamping Kelvin to valid range
       if (kelvin > this->cold_white_temperature_) {
           kelvin = this->cold_white_temperature_;
       } else if (kelvin < this->warm_white_temperature_) {
@@ -82,7 +82,7 @@ class CWNWWLightOutput : public light::LightOutput {
           ESP_LOGI("cwnww", "Blending Neutral White (%f) and Warm White (%f).", nwhite, wwhite);
       }
   
-      // Normalize brightness if constant_brightness_ is set
+      // Apply normalization for constant brightness
       if (this->constant_brightness_) {
           float total = cwhite + nwhite + wwhite;
           if (total > 1.0f) {
@@ -92,14 +92,15 @@ class CWNWWLightOutput : public light::LightOutput {
           }
       }
   
-      // Debug: Log final output levels
+      // Debug: Log final levels
       ESP_LOGI("cwnww", "Final Levels -> Cold White: %f, Neutral White: %f, Warm White: %f", cwhite, nwhite, wwhite);
   
-      // Apply the levels to the hardware outputs
+      // Set the levels to the hardware outputs
       this->cold_white_->set_level(cwhite);
       this->neutral_white_->set_level(nwhite);
       this->warm_white_->set_level(wwhite);
   }
+
 
 
  protected:
