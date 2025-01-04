@@ -17,11 +17,14 @@ class CWNWWLightOutput : public light::LightOutput {
   void set_warm_white_temperature(float warm_white_temperature) { warm_white_temperature_ = warm_white_temperature; }
   void set_constant_brightness(bool constant_brightness) { constant_brightness_ = constant_brightness; }
   light::LightTraits get_traits() override {
-    auto traits = light::LightTraits();
-    traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
-    traits.set_min_mireds(1e6f / this->cold_white_temperature_);
-    traits.set_max_mireds(1e6f / this->warm_white_temperature_);
-    return traits;
+      auto traits = light::LightTraits();
+      traits.set_supported_color_modes({light::ColorMode::COLD_WARM_WHITE});
+  
+      // Correctly map warm white to min mireds and cold white to max mireds
+      traits.set_min_mireds(1e6f / this->warm_white_temperature_);
+      traits.set_max_mireds(1e6f / this->cold_white_temperature_);
+  
+      return traits;
   }
   void write_state(light::LightState *state) override {
     float cwhite = 0.0f, nwhite = 0.0f, wwhite = 0.0f;
