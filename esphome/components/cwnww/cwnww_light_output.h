@@ -36,6 +36,10 @@ class CWNWWLightOutput : public light::LightOutput {
 
 
   void write_state(light::LightState *state) override {
+      ESP_LOGI("cwnww", "is_on: %s", state->current_values.is_on() ? "true" : "false");
+      ESP_LOGI("cwnww", "Kelvin: %f", state->current_values.get_color_temperature());
+      ESP_LOGI("cwnww", "Brightness: %f", state->current_values.get_brightness());
+    
       if (!state->current_values.is_on()) {
           // Turn off all channels
           this->cold_white_->set_level(0.0f);
